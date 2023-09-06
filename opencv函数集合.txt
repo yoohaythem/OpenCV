@@ -1,0 +1,353 @@
+1. 图像基本操作
+img = cv2.imread('01_Picture/01_cat.jpg') 
+img_gray = cv2.imread('01_Picture/01_cat.jpg',cv2.IMREAD_GRAYSCALE)  
+cat = img[0:200,0:200]  # 截图
+cur_img[:,:,0] = 0 , cur_img[:,:,1] = 0   # 截颜色通道
+res = cv2.resize(img,(0,0),fx=3,fy=1)   # 缩放
+cv2.imshow('image_cat',img)  
+cv2.waitKey(1000)  
+cv2.destroyAllWindows()
+cv2.imwrite('01_Picture/02_cat_gray.jpg',img_gray) # 保存图片
+b,g,r = cv2.split(img)
+img = cv2.merge((b,g,r))
+img_dog = cv2.resize(img_dog,(500,414))
+res = cv2.addWeighted(img_cat,0.4,img_dog,0.6,0) # img_cat 的权重为 0.4，img_dog 的权重为 0.6 
+res2 = cv2.add(img_cat,img_dog)
+res3 = img_cat + img_dog
+
+
+
+
+
+
+2. 边界填充
+top_size,bottom_size,left_size,right_size = (50,50,50,50)  # 填充多少区域
+# 最后一个入口参数为填充方式
+# 方式一：复制法
+replicate = cv2.copyMakeBorder(img,top_size,bottom_size,left_size,right_size,borderType=cv2.BORDER_REPLICATE) 
+# 方式二：反射法
+reflect = cv2.copyMakeBorder(img,top_size,bottom_size,left_size,right_size,cv2.BORDER_REFLECT)
+# 方式三：反射法二(不要最边缘的像素)
+reflect101 = cv2.copyMakeBorder(img,top_size,bottom_size,left_size,right_size,cv2.BORDER_REFLECT_101)      
+# 方式四：外包装法
+wrap = cv2.copyMakeBorder(img,top_size,bottom_size,left_size,right_size,borderType=cv2.BORDER_WRAP)
+# 方式五：常量法
+constant = cv2.copyMakeBorder(img,top_size,bottom_size,left_size,right_size,cv2.BORDER_CONSTANT,value=100)
+
+拼图
+import matplotlib.pyplot as plt
+plt.subplot(231), plt.imshow(img,'gray'), plt.title('ORIGINAL')
+plt.subplot(232), plt.imshow(replicate,'gray'), plt.title('REPLICATE')
+plt.subplot(233), plt.imshow(reflect,'gray'), plt.title('REPLECT')
+plt.subplot(234), plt.imshow(wrap,'gray'),plt.title('REFLECT_101')
+plt.subplot(235), plt.imshow(wrap,'gray'),plt.title('WRAP')
+plt.subplot(236), plt.imshow(constant,'gray'),plt.title('CONSTAVI')
+
+plt.show()
+
+
+
+
+
+
+
+3. 阈值
+img_gray = cv2.imread('01_Picture/01_cat.jpg',cv2.IMREAD_GRAYSCALE)    
+ret, thresh1 = cv2.threshold(img_gray, 127, 255, cv2.THRESH_BINARY)    
+print(ret)
+ret, thresh2 = cv2.threshold(img_gray, 127, 255, cv2.THRESH_BINARY_INV) # THRESH_BINARY_INV 相对 THRESH_BINARY 黑的变成白的，白的变成黑的       
+print(ret)
+ret, thresh3 = cv2.threshold(img_gray, 127, 255, cv2.THRESH_TRUNC)     
+print(ret)
+ret, thresh4 = cv2.threshold(img_gray, 127, 255, cv2.THRESH_TOZERO)
+print(ret)
+ret, thresh5 = cv2.threshold(img_gray, 127, 255, cv2.THRESH_TOZERO_INV)
+print(ret)
+
+titles = ['original Image','BINARY','BINARY_INV','TRUNC','TOZERO','TOZERO_INV']        
+images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]  
+
+for i in range(6):
+    plt.subplot(2,3,i+1), plt.imshow(images[i],'gray')  
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+plt.show()
+
+
+
+
+
+
+
+
+4. 滤波
+blur = cv2.blur(img,(3,3))
+box = cv2.boxFilter(img,-1,(3,3),normalize=False)
+aussian = cv2.GaussianBlur(img,(5,5),1)
+median = cv2.medianBlur(img,5)
+res = np.hstack((blur,aussian,median)) # 矩阵横着拼接
+res = np.vstack((blur,aussian,median)) # 矩阵竖着拼接
+cv2.imshow('median vs average', res)
+
+
+
+
+
+
+
+5. 腐蚀&膨胀
+# 只要框里有黑色，中心点的值就变为黑色，即原来的白色被黑色腐蚀掉
+kernel = np.ones((5,5),np.uint8)   # 核，这里是个全是1的5*5二维数组
+或者：kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+erosion = cv2.erode(img,kernel,iterations=1)
+cv2.imshow('erosion',erosion)
+
+kernel = np.ones((3,3),np.uint8)
+dige_dilate = cv2.dilate(dige_erosion,kernel,iterations=1)     
+cv2.imshow('dilate',dige_dilate)
+
+开运算，先腐蚀
+kernel = np.ones((5,5),np.uint8)
+opening = cv2.morphologyEx(img,cv2.MORPH_OPEN,kernel) 
+
+闭运算，先膨胀
+kernel = np.ones((5,5),np.uint8)
+closing = cv2.morphologyEx(img,cv2.MORPH_CLOSE,kernel)
+
+# 梯度 = 腐蚀-膨胀
+kernel = np.ones((7,7),np.uint8)
+dilate = cv2.dilate(pie,kernel,iterations=5) 
+erosion = cv2.erode(pie,kernel,iterations=5) 
+gradient = cv2.morphologyEx(pie,cv2.MORPH_GRADIENT,kernel)
+ 
+# 礼帽 
+# 原始带刺，开运算不带刺，原始输入-开运算 = 刺
+kernel = np.ones((5,5),np.uint8)
+tophat = cv2.morphologyEx(img,cv2.MORPH_TOPHAT,kernel)
+
+# 黑帽  
+# 原始带刺，闭运算带刺并且比原始边界胖一点，闭运算-原始输入 = 原始整体
+kernel = np.ones((5,5),np.uint8)
+blackhat = cv2.morphologyEx(img,cv2.MORPH_BLACKHAT,kernel)
+
+sobelx = cv2.Sobel(pie,cv2.CV_64F,1,0,ksize=3) # 1,0 表示只算水平方向梯度
+sobelx = cv2.convertScaleAbs(sobelx) # 取负数时，取绝对值
+sobely = cv2.Sobel(pie,cv2.CV_64F,0,1,ksize=3) # 1,0 只算 y 方向梯度
+sobely = cv2.convertScaleAbs(sobely) # 取负数时，取绝对值
+sobelxy = cv2.addWeighted(sobelx,0.5,sobely,0.5,0) # 加权和
+
+# 不建议直接计算,还有重影
+sobelxy = cv2.Sobel(pie,cv2.CV_64F,1,1,ksize=3)
+sobelxy = cv2.convertScaleAbs(sobelxy)
+
+# 不同算子的差异
+img = cv2.imread('01_Picture/07_Lena.jpg',cv2.IMREAD_GRAYSCALE)
+sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=3)
+sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=3)
+sobelx = cv2.convertScaleAbs(sobelx)
+sobely = cv2.convertScaleAbs(sobely)
+sobelxy = cv2.addWeighted(sobelx,0.5,sobely,0.5,0)   
+
+scharrx = cv2.Scharr(img,cv2.CV_64F,1,0)
+scharry = cv2.Scharr(img,cv2.CV_64F,0,1)
+scharrx = cv2.convertScaleAbs(scharrx)
+scharry = cv2.convertScaleAbs(scharry)
+scharrxy = cv2.addWeighted(scharrx,0.5,scharry,0.5,0)
+
+laplacian = cv2.Laplacian(img,cv2.CV_64F) # 没有 x、y，因为是求周围点的比较
+laplacian = cv2.convertScaleAbs(laplacian)
+
+res = np.hstack((sobelxy,scharrxy,laplacian))
+cv_show(res,'res')
+
+
+
+
+
+
+6. 边缘检测
+v = cv2.Canny(img,50,100)
+
+
+
+
+
+
+
+7. 图像处理
+up = cv2.pyrUp(img)  # 上采样
+down = cv2.pyrDown(img)   # 下采样
+
+gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+ret, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY) # 大于 127 的取 255，小于 127 的取 0    
+# 做完二值后，再用图像轮廓检测函数再去做
+contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+print(np.array(contours).shape) # 轮廓点的信息
+print(hierarchy) # hierarchy 是把轮廓结果保存在层级结构当中，暂时用不上
+# 绘制轮廓
+draw_img = img.copy() # 若不用拷贝后的，而是用原图画轮廓，则画轮廓图绘把原始的输入图像重写，覆盖掉 
+res = cv2.drawContours(draw_img,contours,-1,(0,0,255),2) # 绘制所有轮廓
+draw_img = img.copy()
+res = cv2.drawContours(draw_img,contours,70,(0,0,255),2) # 画 70 号轮廓，BGR
+# 轮廓特征
+cnt = contours[0] # 通过轮廓索引，拿到该索引对应的轮廓特征
+print(cv2.contourArea(cnt)) # 该轮廓的面积
+print(cv2.arcLength(cnt,True)) # 该轮廓的周长，True表示闭合的
+# 近似轮廓
+epsilon = 0.1 * cv2.arcLength(cnt,True) # 周长的百分比，这里用 0.1 的周长作阈值
+approx = cv2.approxPolyDP(cnt,epsilon,True) # 第二个参数为阈值
+draw_img = img.copy()
+res = cv2.drawContours(draw_img,[approx],-1,(0,0,255),2)
+# 外接矩形
+x,y,w,h = cv2.boundingRect(cnt) # 可以得到矩形四个坐标点的相关信息
+img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255),2)
+cv_show(img,'img')
+# 外接圆
+(x,y),redius = cv2.minEnclosingCircle(cnt)
+center = (int(x),int(y))
+redius = int(redius)
+img = cv2.circle(draw_img,center,redius,(0,255,0),2)
+# 模板匹配
+template = cv2.imread('01_Picture/12_Face.jpg',0)  # 0 表示以灰度图方式读取
+img = cv2.imread('01_Picture/13_Lena.jpg',0) 
+methods = ['cv2.TM_CCOEFF','cv2.TM_CCOEFF_NORMED','cv2.TM_CCORR',
+          'cv2.TM_CCORR_NORMED','cv2.TM_SQDIFF','cv2.TM_SQDIFF_NORMED']
+h, w = template.shape[:2] # 获得模板的宽和高
+for meth in methods:
+    img2 = img.copy()
+    # 匹配方法的真值
+    method = eval(meth) # 提取字符串中的内容，不能用字符串的形式
+    res = cv2.matchTemplate(img,template,method)
+	print(res.shape) # 返回的矩阵大小 (A-a+1)x(B-b+1)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res) # 返回模板匹配后最小值、最大值的位置   
+    
+    # 如果是平方差匹配 TM_SQDIFF 或归一化平方差匹配 TM_SQDIFF_NORMED,取最小值
+    if method in [cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]:
+        top_left = min_loc
+    else:
+        top_left = max_loc
+    bottom_right = (top_left[0]+w,top_left[1]+h)
+    
+    # 画矩形
+    cv2.rectangle(img2,top_left,bottom_right,255,2)
+    
+    plt.subplot(121), plt.imshow(res, cmap='gray')
+    plt.xticks([]), plt.yticks([]) # 隐藏坐标轴
+    plt.subplot(122),plt.imshow(img2,cmap='gray')
+    plt.xticks([]),plt.yticks([])
+    plt.suptitle(meth)
+    plt.show()
+	
+# 模板多匹配
+h, w = template.shape[:2]
+res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED) # res 是返回每一个小块窗口得到的结果值
+threshold = 0.8
+
+# 取匹配程度大于 80% 的坐标
+loc = np.where(res >= threshold) # np.where 使得返回 res 矩阵中值大于 0.8 的索引，即坐标
+# loc 为元组类型, loc 元组有两个值, loc 元组每个值 120 个元素, loc 元组每个值的类型为 numpy.array     
+# zip函数为打包为元组的列表，例 a = [1,2,3] b = [4,5,6] zip(a,b) 为 [(1, 4), (2, 5), (3, 6)]    
+for pt in zip(*loc[::-1]): # *loc：解包   
+    bottom_right = (pt[0] + w, pt[1] + h)
+    cv2.rectangle(img_rgb, pt, bottom_right, (0,0,255),2)
+
+cv2.imshow('img_rgb',img_rgb)
+cv2.waitKey(0)
+
+# 统计直方图
+plt.hist(img.ravel(),256) # img.ravel()将 img 拉成一维数组
+plt.show()
+或：
+color = ('b','g','r')
+for i,col in enumerate(color):
+    histr = cv2.calcHist([img],[i],None,[256],[0,256])
+    print(histr.shape)
+    plt.plot(histr,color=col)
+    plt.xlim([0,256])
+
+# 掩码
+mask = np.zeros(img.shape[:2],np.uint8)
+print(mask.shape)
+mask[100:300,100:400] = 255
+masked_img = cv2.bitwise_and(img,img,mask=mask) # 与操作
+hist_full = cv2.calcHist([img],[0],None,[256],[0,256]) # 不带掩码统计直方图
+hist_mask = cv2.calcHist([img],[0],mask,[256],[0,256]) # 带上掩码统计直方图
+
+equ = cv2.equalizeHist(img)  # 图像均衡
+
+clahe = cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8)) # 自适应均衡化方法生成出来    
+res_clahe = clahe.apply(img) # 方法应用到输入图片当中
+
+
+
+
+
+
+8. 傅里叶变换
+img_float = np.float32(img) # 输入图片转换成 np.float32 格式
+dft = cv2.dft(img_float, flags = cv2.DFT_COMPLEX_OUTPUT) # 傅里叶变换
+dft_shift = np.fft.fftshift(dft) # 将低频值，频率为 0 的部分转换到中间的位置
+
+# 得到灰度图能表示的形式
+magnitude_spectrum = 20 * np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1])) # 对两个通道进行转换才能得到图像形式表达，由于转换后的值为非常小的数值，因此还要转换到 0-255 之间   
+# 作图     
+plt.subplot(121), plt.imshow(img,cmap = 'gray')
+plt.title('Input Image'), plt.xticks([]), plt.yticks([])
+plt.subplot(122), plt.imshow(magnitude_spectrum, cmap = 'gray')
+plt.title('Magnitude Spectrum'), plt.xticks([]), plt.yticks([]) # 越往中心频率越低(被 shift 拉到中间)，越往两侧频率越高
+plt.show()
+
+
+img_float32 = np.float32(img)
+# DFT ( 傅里叶变换 )
+dft = cv2.dft(img_float32, flags = cv2.DFT_COMPLEX_OUTPUT)
+dft_shift = np.fft.fftshift(dft)
+rows, cols = img.shape
+crow, ccol = int(rows/2), int(cols/2) # 中心位置
+
+# 低通滤波
+mask = np.zeros((rows,cols,2),np.uint8)
+mask[crow-30:crow+30,ccol-30:ccol+30] = 1 # 只保留中心点周围的区域，中心点为最低频的
+# IDPT (傅里叶逆变换)
+fshift = dft_shift * mask # 用掩码提取 dft_shift 中相应区域，是 1 就保留，不是 1 就过滤了
+f_ishift = np.fft.ifftshift(fshift) # 把拉到中心位置的频谱区域给还原回去，依旧回到左上角
+img_back = cv2.idft(f_ishift)
+img_back = cv2.magnitude(img_back[:,:,0],img_back[:,:,1]) # 将实部和虚部结合起来，才能将傅里叶变换的结果显示出来  
+
+# 高通滤波
+mask = np.ones((rows,cols,2),np.uint8)
+mask[crow-30:crow+30,ccol-30:ccol+30] = 0 # 中间区域置 0，外面的区域置 1
+# IDFT
+fshift = dft_shift * mask
+f_ishift = np.fft.ifftshift(fshift)
+img_back = cv2.idft(f_ishift)
+img_back = cv2.magnitude(img_back[:,:,0],img_back[:,:,1])
+
+
+
+
+
+
+
+9. 视频
+vc = cv2.VideoCapture('02_Video/00_Scenery.mp4')
+if vc.isOpened():   # 检查是否打开正确
+    open, frame = vc.read() # 这里的 vc.read() 相当于读取图像的第一帧
+                            # 若循环不断的执行 vc.read，则不断的读取第二帧、第三帧....
+    print(open) # 正常打开时，open会返回 True
+else:
+    open = False
+
+while open: # 如果正常打开，则不停循环读取,这里可替换成 i 值，来确定读取 i 帧     
+    ret, frame = vc.read()
+    if frame is None: # 视频读完以后的下一帧为空
+        break
+    if ret == True:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # 读取的图片转换成黑白的   
+        cv2.imshow('result',gray)
+        if cv2.waitKey(10) & 0xFF == 27: # cv2.waitKey(10)为等多少时间执行下一帧，0xFF为退出键ESC
+            break
+vc.release() # release()完成与 open() 相反的工作.释放 open() 向内核申请的所有资源
+cv2.destroyAllWindows() # 销毁所有窗口
+
+
