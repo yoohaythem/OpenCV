@@ -1,4 +1,4 @@
-##  OpenCV 视频学习笔记 — 精心注释版本
+##  OpenCV 视频学习笔记完全注释
 
 0. 视频讲解 https://www.bilibili.com/video/BV1PV411774y?from=search&seid=128144269248922245&spm_id_from=333.337.0.0
 
