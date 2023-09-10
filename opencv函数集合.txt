@@ -328,8 +328,24 @@ img_back = cv2.magnitude(img_back[:,:,0],img_back[:,:,1])
 
 
 
+9. 角点检测
+harris角点检测函数：cv2.cornerHarris()
+	img：数据类型为 ﬂoat32 的入图像。
+	blockSize：角点检测中指定区域的大小。
+	ksize：Sobel求导中使用的窗口大小。常用 3。
+	k：取值参数为 [0,04,0.06]。常用 0.04。
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+gray = np.float32(gray)
+dst = cv2.cornerHarris(gray,2,3,0.04) # 每个点与对应点的相似性地值，即变化值  
+print('dst.shape:',dst.shape)    
+img[dst>0.01*dst.max()] = [0,0,255] # 比相似性最大值的百分之一要大，则标注为角点    
 
-9. 视频
+
+
+
+
+
+10. 视频
 vc = cv2.VideoCapture('02_Video/00_Scenery.mp4')
 if vc.isOpened():   # 检查是否打开正确
     open, frame = vc.read() # 这里的 vc.read() 相当于读取图像的第一帧
