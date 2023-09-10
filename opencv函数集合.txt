@@ -345,6 +345,21 @@ img[dst>0.01*dst.max()] = [0,0,255] # 比相似性最大值的百分之一要大
 
 
 
+
+10. sift特征点提取
+sift = cv2.xfeatures2d.SIFT_create()  # 将 SIFT 算法实例化出来
+kp = sift.detect(gray, None) # 把灰度图传进去，得到特征点、关键点
+img = cv2.drawKeypoints(gray, kp, img)
+kp, des = sift.compute(gray, kp)
+print(np.array(kp).shape) # 6827 个关键点
+print(des.shape) # 每个关键点有 128 维向量
+print(des[0])    # 获得第 0 号关键点的值
+
+
+
+
+
+
 10. 视频
 vc = cv2.VideoCapture('02_Video/00_Scenery.mp4')
 if vc.isOpened():   # 检查是否打开正确
