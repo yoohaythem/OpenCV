@@ -17,7 +17,7 @@ class Stitcher:
         M = self.matchKeypoints(kpsA, kpsB, featuresA, featuresB, ratio, reprojThresh)
 
         # 如果返回结果为空，没有匹配成功的特征点，退出算法
-        # 其实是筛选后的匹配对小于等于4
+        # 其实是筛选后的匹配对小于等于4，未知数不够无法求解
         if M is None:
             return None
 
