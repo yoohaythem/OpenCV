@@ -78,13 +78,15 @@ def video_test(video_name, final_spot_dict, model, class_dictionary):
 
 
 if __name__ == '__main__':
-    test_images = [plt.imread(path) for path in glob.glob('test_images/*.jpg')]
-    weights_path = 'car1.h5'
+    # 使用glob模块的glob函数，它接受一个文件路径模式（通配符）作为参数，返回匹配模式的文件列表。
+    # 使用Matplotlib库的imread函数，它用于读取图像文件并将其加载为NumPy数组。path参数是文件的路径。
+    test_images = [plt.imread(path) for path in glob.glob('test_images/*.jpg')]   # 列表推导式
+    weights_path = 'car1.h5'  # 训练好的模型
     video_name = 'parking_video.mp4'
     class_dictionary = {}
     class_dictionary[0] = 'empty'
     class_dictionary[1] = 'occupied'
-    park = Parking()
+    park = Parking()   # 封装了所有需要用到的函数的一个类
     park.show_images(test_images)
     final_spot_dict = img_process(test_images, park)
     model = keras_model(weights_path)
