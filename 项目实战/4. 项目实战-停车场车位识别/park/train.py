@@ -21,6 +21,8 @@ files_train = 0
 files_validation = 0
 
 cwd = os.getcwd()
+
+# 指定文件夹，从文件夹中读取数据
 folder = 'train_data/train'
 for sub_folder in os.listdir(folder):
     path, dirs, files = next(os.walk(os.path.join(folder, sub_folder)))
@@ -31,8 +33,10 @@ for sub_folder in os.listdir(folder):
     path, dirs, files = next(os.walk(os.path.join(folder, sub_folder)))
     files_validation += len(files)
 
+# 输出统计的训练集和验证集中的图像数量。
 print(files_train, files_validation)
 
+# 定义图像的宽度和高度，以及训练和验证数据目录的路径。
 img_width, img_height = 48, 48
 train_data_dir = "train_data/train"
 validation_data_dir = "train_data/test"
@@ -42,21 +46,27 @@ batch_size = 32
 epochs = 15
 num_classes = 2
 
+# 创建一个预训练的VGG16模型。
 model = applications.VGG16(weights='imagenet', include_top=False, input_shape=(img_width, img_height, 3))
 
+# 冻结前10个层，以便迁移学习。
 for layer in model.layers[:10]:
     layer.trainable = False
 
 x = model.output
 x = Flatten()(x)
+# 构建一个新的模型，包括从VGG16模型中提取的特征向量，并添加一个全连接层用于分类。
+# 该模型被编译以进行训练，使用SGD优化器和交叉熵损失函数。
 predictions = Dense(num_classes, activation="softmax")(x)
 
+# 创建图像数据生成器，用于数据增强，包括图像缩放、水平翻转、平移和旋转等操作。生成器将用于从目录中加载训练和验证图像。
 model_final = Model(input=model.input, output=predictions)
 
 model_final.compile(loss="categorical_crossentropy",
                     optimizer=optimizers.SGD(lr=0.0001, momentum=0.9),
                     metrics=["accuracy"])
 
+# 使用ImageDataGenerator生成器从目录中加载训练和验证数据，并设置相关参数，如目标大小、批量大小和类别模式。
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
     horizontal_flip=True,
@@ -90,6 +100,8 @@ checkpoint = ModelCheckpoint("car1.h5", monitor='val_acc', verbose=1, save_best_
                              mode='auto', period=1)
 early = EarlyStopping(monitor='val_acc', min_delta=0, patience=10, verbose=1, mode='auto')
 
+# 使用model_final.fit_generator函数来训练模型，传递训练数据生成器、批次数量、训练周期数、验证数据生成器和验证批次数量。
+# 模型的性能和训练历史将保存在history_object中。
 history_object = model_final.fit_generator(
     train_generator,
     samples_per_epoch=nb_train_samples,

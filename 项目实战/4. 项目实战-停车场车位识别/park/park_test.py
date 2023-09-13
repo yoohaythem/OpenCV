@@ -29,7 +29,7 @@ def img_process(test_images, park):
     #              也就相当于 def xxx(image):
     #                           park.detect_edges(image)
     #                           return image
-    #                       map(lambda image: park.detect_edges(image), gray_images) ==> map(xxx(image), gray_images)
+    #           故 map(lambda image: park.detect_edges(image), gray_images) ==相当于==> map(xxx(image), gray_images)
     # 这里由于detect_edges函数返回cv2.Canny，只是在图像上做了修改，并没有单独的返回值，所以需要用匿名函数将返回值包装为图像
     edge_images = list(map(lambda image: park.detect_edges(image), gray_images))
     park.show_images(edge_images)
@@ -76,7 +76,7 @@ def img_process(test_images, park):
         # 保存车位坐标字典到名为 "spot_dict.pickle" 的文件中。
         pickle.dump(final_spot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # # 将图像中的每个停车位按照其坐标从原图像中裁剪出来，然后将裁剪后的停车位图像保存到指定文件夹中，以便用于卷积神经网络 (CNN) 的训练数据。
+    # 将图像中的每个停车位按照其坐标从原图像中裁剪出来，然后将裁剪后的停车位图像保存到指定文件夹中，以便用于卷积神经网络 (CNN) 的训练数据。
     park.save_images_for_cnn(test_images[0], final_spot_dict)
 
     return final_spot_dict
@@ -115,6 +115,7 @@ if __name__ == '__main__':
     class_dictionary[1] = 'occupied'
     park = Parking()  # 封装了所有需要用到的函数的一个类
     park.show_images(test_images)
+    # 用于图像处理和车位检测的操作。它执行了一系列的图像处理步骤，并最终返回一个包含车位信息的字典。
     final_spot_dict = img_process(test_images, park)
     model = keras_model(weights_path)
     img_test(test_images, final_spot_dict, model, class_dictionary)
