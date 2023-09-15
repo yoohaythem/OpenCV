@@ -139,7 +139,7 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # 对灰度图像进行高斯模糊处理，这有助于去除图像中的噪点。 (5, 5) 是高斯核的大小，而 0 是标准差（控制模糊程度）。
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 cv_show('blurred', blurred)
-# 使用Canny边缘检测算法检测图像的边缘。
+# 使用Canny边缘检测算法检测图像的边缘，边缘采用白色保存。
 # blurred 是输入图像，(75, 200) 是Canny算法的两个阈值参数，用于控制边缘检测的敏感度。边缘图像存储在 edged 变量中。
 edged = cv2.Canny(blurred, 75, 200)
 cv_show('edged', edged)
@@ -245,12 +245,13 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         cv_show('mask', mask)
 
         # 通过按位与运算 cv2.bitwise_and 将掩码应用于二值化图像 thresh。
+        # 使得当前遍历到的轮廓以外的区域全部变为黑色。
         mask = cv2.bitwise_and(thresh, thresh, mask=mask)
         # 计算答案区域中非零像素点的数量，通过计算非零点数量来算是否选择这个答案
         total = cv2.countNonZero(mask)
 
         # 如果当前没有存储答案，或者当前存储的答案区域中非零像素点的数量没有本轮循环中的高
-        # 铅笔涂黑了的答案，非零像素点肯定最高
+        # 因为前面做了边缘检测，除了边缘都是黑色；所以铅笔涂了的答案，边缘更多，即非零像素点肯定最高
         if bubbled is None or total > bubbled[0]:
             # total：答案区域中非零像素点的数量
             # j：存储的是第j个答案
