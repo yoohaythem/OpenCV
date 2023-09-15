@@ -1,6 +1,7 @@
 import cv2
 
 
+# 根据轮廓外接矩形的顶点坐标位置顺序，对轮廓进行排序
 def sort_contours(cnts, method="left-to-right"):
     reverse = False
     i = 0
@@ -19,9 +20,9 @@ def sort_contours(cnts, method="left-to-right"):
     # 对轮廓和对应的边界框信息进行排序，并将排序后的结果重新分配给 cnts 和 boundingBoxes。
     # zip(cnts, boundingBoxes)：这一部分将 cnts 和 boundingBoxes 列表中的元素一一配对，每个元素都是一个包含轮廓和边界框信息的元组。
     # sorted(..., key=lambda x: x[1][0], reverse=reverse)：这一部分使用 sorted 函数对这些元组进行排序，排序的依据是每个元组中的第二个元素 x[1] 的第一个值 x[1][0]，即边界框的左上角 x 坐标。
-    # ---语法教学：lambda后面的参数代指被排序的每个元素，这里就是 zip(cnts, boundingBoxes)里的每个元素，x[1]即 boundingBoxes里的每个元素
-    # reverse 参数用于控制排序的升序或降序，如果设置为 True，则是降序（从大到小）。
-    # 最后，zip(*sorted(...)) 将排序后的元组再次分开，分别赋值给 cnts 和 boundingBoxes，从而得到排序后的轮廓列表 cnts 和边界框列表 boundingBoxes。
+    # ---python教学---：lambda后面的参数代指被排序的每个元素，这里就是 zip(cnts, boundingBoxes)里的每个元素，x[1]即 boundingBoxes里的每个元素
+    #                  reverse 参数用于控制排序的升序或降序，如果设置为 True，则是降序（从大到小）。
+    #                  最后，zip(*sorted(...)) 将排序后的元组再次分开，分别赋值给 cnts 和 boundingBoxes，从而得到排序后的轮廓列表 cnts 和边界框列表 boundingBoxes。
 
     # ** 整个过程就是 (a3,a4,a2,a1),(b3,b4,b2,b1) 的两个元祖 ---[zip拉链]--->
     #    ((a3,b3),(a4,b4),(a2,b2),(a1,b1)) 的一个迭代器  ---[根据b排序,即x[1]]--->

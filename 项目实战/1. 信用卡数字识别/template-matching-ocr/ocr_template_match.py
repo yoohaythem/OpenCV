@@ -97,7 +97,7 @@ cv_show('img', img)
 
 # myutils.py的第一个函数调用，对轮廓的列表从左到右进行排序
 refCnts = myutils.sort_contours(refCnts, method="left-to-right")[0]  # 排序，从左到右，从上到下
-digits = {}  # ---语法教学：这里是字典的语法糖。在Python里，集合是没有语法糖的，只能用set()
+digits = {}  # ---python教学---：这里是字典的语法糖。在Python里，集合是没有语法糖的，只能用set()
 
 # 9. 生成模板与数字对应关系
 # 遍历每一个轮廓
