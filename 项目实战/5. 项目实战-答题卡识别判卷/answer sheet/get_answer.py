@@ -14,7 +14,7 @@ ap.add_argument("-i", "--image", required=True, help="path to the input image")
 # 解析命令行参数并将它们存储在args变量中。
 args = vars(ap.parse_args())
 
-# 正确答案
+# 正确答案  BEADB
 ANSWER_KEY = {0: 1, 1: 4, 2: 0, 3: 3, 4: 1}
 
 
@@ -139,7 +139,7 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # 对灰度图像进行高斯模糊处理，这有助于去除图像中的噪点。 (5, 5) 是高斯核的大小，而 0 是标准差（控制模糊程度）。
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 cv_show('blurred', blurred)
-# 使用Canny边缘检测算法检测图像的边缘，边缘采用白色保存。
+# 使用Canny边缘检测算法检测图像的边缘。
 # blurred 是输入图像，(75, 200) 是Canny算法的两个阈值参数，用于控制边缘检测的敏感度。边缘图像存储在 edged 变量中。
 edged = cv2.Canny(blurred, 75, 200)
 cv_show('edged', edged)
@@ -148,8 +148,8 @@ cv_show('edged', edged)
 # 用于查找输入的二值化图像 edged 中的轮廓。
 # 参数 cv2.RETR_EXTERNAL 意味着仅提取最外层（外部）的轮廓，
 # cv2.CHAIN_APPROX_SIMPLE 表示对轮廓进行适当的逼近，以减少轮廓点的数量，从而节省内存。
-# 返回值中的 cnts 是一个包含轮廓信息的列表。每个轮廓都是一组点的坐标。
-cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
+# 函数的返回值cnts是一个包含检测到的轮廓的列表。由于 findContours 返回多个值，这里使用了 [0] 来获取第一个返回值，即轮廓列表的坐标。
+cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
 # 在原始图像 contours_img 上绘制轮廓。具体参数如下：
 #   contours_img 是目标绘图的图像。
 #   cnts 是轮廓列表。
@@ -191,7 +191,7 @@ cv_show('warped', warped)
 #   warped 是要进行二值化处理的图像。
 #   0 是用于计算二值的初始值。
 #   255 是二值化后的最大值，即二值化后的前景值。
-#   cv2.THRESH_BINARY | cv2.THRESH_OTSU 表示使用二进制二值化方法，并采用OTSU自动确定阈值，适合双峰。
+#   cv2.THRESH_BINARY_INV 表示使用二进制颠倒二值化方法（黑变白，白变黑），cv2.THRESH_OTSU表示采用OTSU自动确定阈值，适合双峰，| 表示同时采用。
 thresh = cv2.threshold(warped, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 cv_show('thresh', thresh)
 
@@ -204,6 +204,7 @@ thresh_Contours = thresh.copy()
 #   cv2.findContours() 函数的返回值包括两个元素，第一个是包含所有轮廓的列表，第二个是轮廓的层次结构信息。在这行代码中，通过 [1] 获取了第二个元素，即轮廓的列表。
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
 # 在图像 thresh_Contours 上绘制轮廓线的宽度为3个像素，颜色红色的所有轮廓。
+# 注意：由于输入图像 thresh_Contours 不是彩色图像，而是灰度图像，所以无法显示颜色！！！
 cv2.drawContours(thresh_Contours, cnts, -1, (0, 0, 255), 3)
 cv_show('thresh_Contours', thresh_Contours)
 
@@ -221,7 +222,7 @@ for c in cnts:
     if w >= 20 and h >= 20 and 0.9 <= ar <= 1.1:
         questionCnts.append(c)
 
-# 按照从上到下进行排序
+# 按照从上到下进行排序，保证每一排的选项在一起，但是每一排内部不一定按顺序
 questionCnts = sort_contours(questionCnts, method="top-to-bottom")[0]
 
 correct = 0
@@ -251,7 +252,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
         total = cv2.countNonZero(mask)
 
         # 如果当前没有存储答案，或者当前存储的答案区域中非零像素点的数量没有本轮循环中的高
-        # 因为前面做了边缘检测，除了边缘都是黑色；所以铅笔涂了的答案，边缘更多，即非零像素点肯定最高
+        # 因为前面做了THRESH_BINARY_INV的二值化，白的变成黑的，黑的变成白的；所以铅笔涂了的答案，边缘更多，即非零像素点肯定最高
         if bubbled is None or total > bubbled[0]:
             # total：答案区域中非零像素点的数量
             # j：存储的是第j个答案
@@ -271,6 +272,7 @@ for (q, i) in enumerate(np.arange(0, len(questionCnts), 5)):
     cv2.drawContours(warped, [cnts[k]], -1, color, 3)
 
 # 计算得分并在图像上显示
+# 注意：warped也是二值化图像，所以在上面画的形状，写的文字也都没有颜色！！！
 score = (correct / 5.0) * 100
 print("[INFO] score: {:.2f}%".format(score))
 cv2.putText(warped, "{:.2f}%".format(score), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
