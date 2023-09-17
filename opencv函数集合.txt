@@ -400,3 +400,66 @@ vc.release() # release()完成与 open() 相反的工作.释放 open() 向内核
 cv2.destroyAllWindows() # 销毁所有窗口
 
 
+
+
+
+
+12. 背景建模
+
+# 经典的测试视频
+cap = cv2.VideoCapture('02_Video/01_Foreground.avi')
+# 形态学操作需要使用
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))  # 核，这里是个全是1的3*3二维数组
+# 创建混合高斯模型用于背景建模
+fgbg = cv2.createBackgroundSubtractorMOG2() # 混合高斯模型实例化对象
+while(True):    
+    ret,frame = cap.read()    
+    fgmask = fgbg.apply(frame)    # 每一帧应用到混合高斯模型中
+    # 形态学开运算去噪点
+    fgmask = cv2.morphologyEx(fgmask,cv2.MORPH_OPEN,kernel)
+    # 寻找视频中的轮廓
+    contours, hierarchy = cv2.findContours(fgmask, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)    
+
+    k = cv2.waitKey(150) & 0xff # 0xff 表示按退出键 ESC 就停止了
+    if k == 27:
+        break
+
+
+
+
+
+
+13. 光流估计
+
+# OpenCV 中用于检测图像中的角点的函数。
+#     old_gray: 输入的灰度图像，是检测角点的源图像。
+#     mask（可选参数）：指定感兴趣区域（ROI），只在指定的区域内检测角点。如果不需要指定 ROI，可以将其设置为 None。
+#     maxCorners: 要检测的最大角点数量。如果不限制角点最大数量，速度就会有些慢，达不到实时的效果。
+#     qualityLevel: 角点的质量水平，范围为 0 到 1，通常设置为较小的值。品质因子设置的越大，得到的角点越少。
+#     minDistance: 检测到的角点之间的最小距离。
+#     blockSize: 角点检测中的块大小，这里没填。
+# 函数的返回值是一个包含检测到的角点坐标的 NumPy 数组。
+# **feature_params：字典解包，用来传入不定长的字典变量。
+feature_params = dict( maxCorners = 100, qualityLevel = 0.3, minDistance = 7 )
+p0 = cv2.goodFeaturesToTrack(old_gray, mask = None, **feature_params)  # 拿到第一帧的角点，后面视频中是对第一帧的角点进行追踪  
+
+while(True):
+    # 从第二帧开始
+    ret, frame = cap.read()
+    frame_gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+
+    # OpenCV 中用于光流估计的函数，通常用于跟踪图像中的特征点。下面是函数的参数解释：
+    #     old_gray: 之前帧的灰度图像，是光流估计的源图像。
+    #     frame_gray: 当前帧的灰度图像，是光流估计的目标图像。
+    #     p0: 之前帧中的特征点坐标，是使用 cv2.goodFeaturesToTrack() 检测到的角点。
+    #     None：这是一个掩码图像，用于指定在哪些点进行光流估计。通常设置为 None，表示在所有特征点上进行估计。
+    #     lk_params: 一个包含光流估计参数的字典。常见的参数包括：
+    #         winSize: 搜索窗口的大小，光流算法会在该窗口内搜索特征点的位置。
+    #         maxLevel: 图像金字塔的最大级别。
+    #         criteria: 停止条件，通常设置为迭代次数或精度。
+    # 函数的返回值包括：
+    #     p1: 在当前帧中估计得到的特征点坐标。
+    #     st: 一个状态数组，用于指示哪些特征点被成功跟踪，哪些失败。
+    #     err: 一个误差数组，包含每个特征点的跟踪误差。
+	lk_params = dict( winSize = (15,15), maxLevel = 2 )
+    p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)                   
