@@ -31,26 +31,21 @@ def start_tracker(box, label, rgb, inputQueue, outputQueue):
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--prototxt", required=True,
-                help="path to Caffe 'deploy' prototxt file")
-ap.add_argument("-m", "--model", required=True,
-                help="path to Caffe pre-trained model")
-ap.add_argument("-v", "--video", required=True,
-                help="path to input video file")
-ap.add_argument("-o", "--output", type=str,
-                help="path to optional output video file")
-ap.add_argument("-c", "--confidence", type=float, default=0.2,
-                help="minimum probability to filter weak detections")
+ap.add_argument("-p", "--prototxt", required=True, help="path to Caffe 'deploy' prototxt file")
+ap.add_argument("-m", "--model", required=True, help="path to Caffe pre-trained model")
+ap.add_argument("-v", "--video", required=True, help="path to input video file")
+ap.add_argument("-o", "--output", type=str, help="path to optional output video file")
+ap.add_argument("-c", "--confidence", type=float, default=0.2, help="minimum probability to filter weak detections")
 args = vars(ap.parse_args())
 
 # 一会要放多个追踪器
 inputQueues = []
 outputQueues = []
 
-CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
-           "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-           "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-           "sofa", "train", "tvmonitor"]
+# SSD标签
+CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car",
+           "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person",
+           "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 
 print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
