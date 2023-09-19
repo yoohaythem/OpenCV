@@ -12,18 +12,19 @@ ap.add_argument("-t", "--tracker", type=str, default="kcf",
 args = vars(ap.parse_args())
 
 # opencv已经实现了的追踪算法
+
 OPENCV_OBJECT_TRACKERS = {
 	"csrt": cv2.TrackerCSRT_create,
 	"kcf": cv2.TrackerKCF_create,
-	"boosting": cv2.TrackerBoosting_create,
+	"boosting": cv2.legacy.TrackerBoosting_create,
 	"mil": cv2.TrackerMIL_create,
-	"tld": cv2.TrackerTLD_create,
-	"medianflow": cv2.TrackerMedianFlow_create,
-	"mosse": cv2.TrackerMOSSE_create
+	"tld": cv2.legacy.TrackerTLD_create,
+	"medianflow": cv2.legacy.TrackerMedianFlow_create,
+	"mosse": cv2.legacy.TrackerMOSSE_create
 }
 
 # 实例化OpenCV's multi-object tracker
-trackers = cv2.MultiTracker_create()
+trackers = cv2.legacy.MultiTracker_create()
 vs = cv2.VideoCapture(args["video"])
 
 # 视频流
