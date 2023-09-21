@@ -7,26 +7,31 @@ import cv2
 
 
 def start_tracker(box, label, rgb, inputQueue, outputQueue):
+    # 使用dlib来进行目标追踪
+    # http://dlib.net/python/index.html#dlib.correlation_tracker
+    # 创建一个空的目标追踪器 t。
     t = dlib.correlation_tracker()
+    # 矩形区域用于指定需要追踪的目标在当前帧中的位置
     rect = dlib.rectangle(int(box[0]), int(box[1]), int(box[2]), int(box[3]))
+    # 启动目标追踪器，其中 rgb 是当前帧的图像，rect 是指定的目标位置。这个操作会让追踪器开始跟踪指定位置的目标。
     t.start_track(rgb, rect)
 
     while True:
-        # 获取下一帧
+        # 从队列中获取下一帧
         rgb = inputQueue.get()
 
-        # 非空就开始处理
+        # 非空（没有到最后一帧）就开始处理
         if rgb is not None:
-            # 更新追踪器
-            t.update(rgb)
-            pos = t.get_position()
-
+            t.update(rgb)  # 更新追踪器
+            
+            # 获取最新位置
+            pos = t.get_position()  
             startX = int(pos.left())
             startY = int(pos.top())
             endX = int(pos.right())
             endY = int(pos.bottom())
 
-            # 把结果放到输出q
+            # 把结果放到输出队列中
             outputQueue.put((label, (startX, startY, endX, endY)))
 
 
@@ -73,8 +78,7 @@ if __name__ == '__main__':
 
         if args["output"] is not None and writer is None:
             fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-            writer = cv2.VideoWriter(args["output"], fourcc, 30,
-                                     (frame.shape[1], frame.shape[0]), True)
+            writer = cv2.VideoWriter(args["output"], fourcc, 30, (frame.shape[1], frame.shape[0]), True)
 
         # 首先检测位置
         if len(inputQueues) == 0:
@@ -100,16 +104,12 @@ if __name__ == '__main__':
                     outputQueues.append(oq)
 
                     # 多核
-                    p = multiprocessing.Process(
-                        target=start_tracker,
-                        args=(bb, label, rgb, iq, oq))
+                    p = multiprocessing.Process(target=start_tracker, args=(bb, label, rgb, iq, oq))
                     p.daemon = True
                     p.start()
 
-                    cv2.rectangle(frame, (startX, startY), (endX, endY),
-                                  (0, 255, 0), 2)
-                    cv2.putText(frame, label, (startX, startY - 15),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
+                    cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                    cv2.putText(frame, label, (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
 
         else:
             # 多个追踪器处理的都是相同输入
@@ -121,10 +121,8 @@ if __name__ == '__main__':
                 (label, (startX, startY, endX, endY)) = oq.get()
 
                 # 绘图
-                cv2.rectangle(frame, (startX, startY), (endX, endY),
-                              (0, 255, 0), 2)
-                cv2.putText(frame, label, (startX, startY - 15),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
+                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                cv2.putText(frame, label, (startX, startY - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2)
 
         if writer is not None:
             writer.write(frame)
