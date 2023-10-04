@@ -2,12 +2,16 @@
 import cv2
 
 # 读取拼接图片
-imageA = cv2.imread("left_01.png")
-imageB = cv2.imread("right_01.png")
+# imageA = cv2.imread("left_01.png")
+# imageB = cv2.imread("right_01.png")
+
+imageA = cv2.imread("left_02.jpg")
+imageB = cv2.imread("right_02.jpg")
 
 # 把图片拼接成全景图
 stitcher = Stitcher()
 (result, vis) = stitcher.stitch([imageA, imageB], showMatches=True)
+# cv2.imwrite('result.png', result)
 
 # 显示所有图片
 cv2.imshow("Image A", imageA)
